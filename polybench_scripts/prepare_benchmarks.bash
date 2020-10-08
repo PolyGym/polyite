@@ -1,12 +1,13 @@
 #!/bin/bash
 
-POLLY_INSTALL_DIR="set this to the correct path"
+POLLY_INSTALL_DIR="/devel/git_3rd/polyite/llvm_root/llvm_build"
 clang="${POLLY_INSTALL_DIR}/bin/clang"
 llc="${POLLY_INSTALL_DIR}/bin/llc"
 opt="${POLLY_INSTALL_DIR}/bin/opt"
 llvm_link="${POLLY_INSTALL_DIR}/bin/llvm-link"
 polly="${POLLY_INSTALL_DIR}/bin/clang"
-POLYITE_LOC="set this to the correct path"
+POLYITE_LOC="/devel/git_3rd/polyite/polyite"
+
 
 pollyConfigurations="`pwd`/polly_configurations.txt"
 
@@ -29,7 +30,8 @@ function getRegionList {
   regionsTmp=/tmp/regions_tmp
   for f in *jscop
   do
-    grep -P '\"name\" : \".* => .*\",' < ${f} | sed -r 's/\s+\"name\"\s:\s\"(.*)\s=>\s(.*)\",/%\1---%\2/g'
+    #grep -P '\"name\" : \".* => .*\",' < ${f} | sed -r 's/\s+\"name\"\s:\s\"(.*)\s=>\s(.*)\",/%\1---%\2/g'
+    grep -P '\"name\" : \".*---.*\",' < ${f} | sed -r 's/\s+\"name\"\s:\s\"(.*)---(.*)\",/\1---\2/g'
   done > ${regionsTmp}
 }
 
@@ -408,9 +410,11 @@ do
 
     echo "Generating the baseline for ${benchmarkName}."
     getRegionList
+    echo "--"
     polybenchDFlags="-DPOLYBENCH_USE_C99_PROTO -D${dataSetSize}"
     if [ ${generateBaseline} == "true" ]
     then
+  echo "++++${generateBaseline}"
         binaryCount=0
         echo "Scheduling baseline measurement for O3"
         binaryCount=$((binaryCount + 1))
