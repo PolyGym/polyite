@@ -1,12 +1,12 @@
 #!/bin/bash
 
-POLLY_INSTALL_DIR="/devel/git_3rd/polyite/llvm_root/llvm_build"
+POLLY_INSTALL_DIR="/net/home/brauckmann/poly/polyite/llvm_root/llvm_build"
 clang="${POLLY_INSTALL_DIR}/bin/clang"
 llc="${POLLY_INSTALL_DIR}/bin/llc"
 opt="${POLLY_INSTALL_DIR}/bin/opt"
 llvm_link="${POLLY_INSTALL_DIR}/bin/llvm-link"
 polly="${POLLY_INSTALL_DIR}/bin/clang"
-POLYITE_LOC="/devel/git_3rd/polyite/polyite"
+POLYITE_LOC="/net/home/brauckmann/poly/polyite/polyite"
 
 
 pollyConfigurations="`pwd`/polly_configurations.txt"
@@ -59,7 +59,7 @@ function writeGAConfig {
     local output=$6
     local paramValMappings=$7
 
-    echo "numMeasurementThreads=30" > ${output}
+    echo "numMeasurementThreads=1" > ${output}
     echo "regularPopulationSize=30" >> ${output}
     echo "maxNumNewSchedsFromCrossover=3" >> ${output}
     echo "rayCoeffsRange=3" >> ${output}
@@ -67,7 +67,7 @@ function writeGAConfig {
     echo "maxNumRays=2" >> ${output}
     echo "maxNumLines=2" >> ${output}
     echo "probabilityToCarryDep=0.4" >> ${output}
-    echo "maxNumSchedsAtOnce=2" >> ${output}
+    echo "maxNumSchedsAtOnce=1" >> ${output}
     echo "probabilityToMutateSchedRow=0.1" >> ${output}
     echo "probabilityToMutateGeneratorCoeff=0.1" >> ${output}
     echo "generatorCoeffMaxDenominator=3" >> ${output}
@@ -81,7 +81,7 @@ function writeGAConfig {
     echo "scopRegionEnd=${regionEnd}" >> ${output}
     echo "irFilesLocation=`pwd`" >> ${output}
     echo "referenceOutputFile=`pwd`/${benchmarkName}/ref_output" >> ${output}
-    echo "numExecutionTimeMeasurements=5" >> ${output}
+    echo "numExecutionTimeMeasurements=1" >> ${output}
     echo "populationFilePrefix=${benchmarkName}_population" >> ${output}
     echo "currentGeneration=0" >> ${output}
     echo "maxGenerationToReach=40" >> ${output}
@@ -137,8 +137,8 @@ function writeGAConfig {
     echo "schedTreeSimplDivideCoeffsByGCD=true" >> ${output}
     echo "schedTreeSimplElimSuperfluousSubTrees=true" >> ${output}
     echo "schedTreeSimplElimSuperfluousDimNodes=true" >> ${output}
-    echo "barvinokBinary=${HOME}/workspace/count_integer_points/count_integer_points" >> ${output}
-    echo "barvinokLibraryPath=${HOME}/workspace/barvinok/barvinok/install/lib" >> ${output}
+    echo "barvinokBinary=/net/home/brauckmann/poly/polyite/barvinok_binary/count_integer_points" >> ${output}
+    echo "barvinokLibraryPath=/net/home/brauckmann/poly/polyite/barvinok/install/lib" >> ${output}
     echo "normalizeFeatures=true" >> ${output}
     echo "evaluationStrategy=CPU" >> ${output}
     echo "learningSet=" >> ${output}
@@ -171,13 +171,13 @@ function writeRandExpConf {
     local output=$6
     local paramValMappings=$7
 
-    echo "numMeasurementThreads=30" > ${output}
+    echo "numMeasurementThreads=1" > ${output}
     echo "rayCoeffsRange=3" >> ${output}
     echo "lineCoeffsRange=3" >> ${output}
     echo "maxNumRays=2" >> ${output}
     echo "maxNumLines=2" >> ${output}
     echo "probabilityToCarryDep=0.4" >> ${output}
-    echo "maxNumSchedsAtOnce=2" >> ${output}
+    echo "maxNumSchedsAtOnce=1" >> ${output}
     echo "measurementCommand=${POLYITE_LOC}/measure_polybench.bash" >> ${output}
     echo "measurementWorkingDir=${POLYITE_LOC}" >> ${output}
     echo "measurementTmpDirBase=/tmp/" >> ${output}
@@ -200,13 +200,13 @@ function writeRandExpConf {
     echo "evaluationSigIntExitCode=42" >> ${output}
     echo "randSchedsTimeout=200" >> ${output}
     echo "genSchedsMaxAllowedConseqFailures=1000" >> ${output}
-    echo "numScheds=$((30 + 40*15))" >> ${output}
+    echo "numScheds=1000" >> ${output}
     echo "numScheduleGenThreads=7" >> ${output}
     echo "filterImportedPopulation=false" >> ${output}
     echo "importScheds=false" >> ${output}
     echo "islComputeout=38400000" >> ${output}
-    echo "barvinokBinary=${HOME}/workspace/count_integer_points/count_integer_points" >> ${output}
-    echo "barvinokLibraryPath=${HOME}/workspace/barvinok/barvinok/install/lib" >> ${output}
+    echo "barvinokBinary=/net/home/brauckmann/poly/polyite/barvinok_binary/count_integer_points" >> ${output}
+    echo "barvinokLibraryPath=/net/home/brauckmann/poly/polyite/barvinok/install/lib" >> ${output}
     echo "paramValMappings=${paramValMappings}" >> ${output}
     echo "measureParExecTime=true" >> ${output}
     echo "measureSeqExecTime=false" >> ${output}
@@ -221,7 +221,7 @@ function writeRandExpConf {
     echo "measureCacheHitRatePar=false" >> ${output}
     echo "measureCacheHitRateSeq=false" >> ${output}
     echo "seed=NONE" >> ${output}
-    echo "numactlConf=--physcpubind=0-7 --membind=0" >> ${output}
+    echo "numactlConf=NONE" >> ${output}
     echo "completeSchedules=false" >> ${output}
     echo "linIndepVectsDoNotFixDims=false" >> ${output}
     echo "simplifySchedTrees=true" >> ${output}
@@ -388,7 +388,7 @@ do
     getKernelFuncName
 
     echo "Exporting the JSCOP file(s) for ${benchmarkName}"
-    ${polly} -march=native -O3 -mllvm -polly -mllvm -polly-export -mllvm -polly-only-func=${kernelFunctionName} -mllvm -polly-dependences-computeout=0 -mllvm -polly-optimizer=none -I. -DPOLYBENCH_USE_C99_PROTO -D${dataSetSize} polybench.c ${benchmarkName}.c -o /dev/null
+    ${polly} -march=native -O3 -mllvm -polly -mllvm -polly-export -mllvm -polly-only-func=${kernelFunctionName} -mllvm -polly-dependences-computeout=0 -mllvm -polly-optimizer=none -I. -DPOLYBENCH_USE_C99_PROTO -lm -D${dataSetSize} polybench.c ${benchmarkName}.c -o /dev/null
 
     if [ ${genRefOutput} == "true" ]
     then

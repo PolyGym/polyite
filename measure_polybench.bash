@@ -1,6 +1,6 @@
 #!/bin/bash
 #POLLY_INSTALL_DIR=/scratch/ganser/polly
-POLLY_INSTALL_DIR=/home/stg/Documents/arbeit/polly/llvm_build
+POLLY_INSTALL_DIR=/net/home/brauckmann/poly/polyite/llvm_root/llvm_build
 opt="${POLLY_INSTALL_DIR}/bin/opt"
 polly="${POLLY_INSTALL_DIR}/bin/clang"
 llc="${POLLY_INSTALL_DIR}/bin/llc"
@@ -90,6 +90,8 @@ polybenchH="${sourceLocation}/polybench.h"
 polybenchC="${sourceLocation}/polybench.c"
 benchmarkH="${sourceLocation}/${benchmarkName}.h"
 benchmarkC="${sourceLocation}/${benchmarkName}.c"
+
+utilitiesLocation="${sourceLocation}/../utilities"
 
 # validate args 1
 if [ ! -d ${tmpDirBase} ] || [ ! -w ${tmpDirBase} ] || [ ! -x ${tmpDirBase} ]
@@ -186,7 +188,7 @@ pollyFuncRegionFlags="-mllvm -polly-only-func=${functionName} -mllvm -polly-only
 pollyFlags="-mllvm -polly -mllvm -polly-import -mllvm -polly-optimizer=none -mllvm -polly-dependences-computeout=0 \
 -mllvm -polly-import-jscop-read-schedule-tree=true ${pollyFuncRegionFlags}"
 
-${polly} -march=native -O3 ${pollyFlags} ${seqPollyOptFlags} -mllvm -polly-code-generator=none ${polybenchFlags} -I${sourceLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -lpapi -o /dev/null  > schedImportOut 2>&1 &
+${polly} -O3 ${pollyFlags} ${seqPollyOptFlags} -mllvm -polly-code-generator=none ${polybenchFlags} -I${sourceLocation} -I${utilitiesLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -o /dev/null  > schedImportOut 2>&1 &
 pid=$!
 wait ${pid}
 if [ $? -ne 0 ]
@@ -237,9 +239,9 @@ function compile {
     do
         if [ ${useNumactl} == "true" ]
         then
-            /usr/bin/time -f%e -ocompileTimeOut numactl ${numactlConf} ${polly} -march=native -O3 ${currPollyFlags} ${polybenchFlags} -I${sourceLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -o /dev/null &
+            /usr/bin/time -f%e -ocompileTimeOut numactl ${numactlConf} ${polly} -O3 ${currPollyFlags} ${polybenchFlags} -I${sourceLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -o /dev/null &
         else
-            /usr/bin/time -f%e -ocompileTimeOut ${polly} -march=native -O3 ${currPollyFlags} ${polybenchFlags} -I${sourceLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -o /dev/null &
+            /usr/bin/time -f%e -ocompileTimeOut ${polly} -O3 ${currPollyFlags} ${polybenchFlags} -I${sourceLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -o /dev/null &
         fi
         pid=$!
 	    wait ${pid}
@@ -253,7 +255,8 @@ function compile {
 	    compileDurations[${i}]=${currCompileDuration}
 	    rm compileTimeOut
     done
-    ${polly} -march=native -O3 ${currPollyFlags} ${polybenchFlags} -I${sourceLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -lpapi -o ${prefix} &
+    echo "${polly} -O3 ${currPollyFlags} ${polybenchFlags} -I${sourceLocation} -I${utilitiesLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -o ${prefix}" >> /tmp/y.txt
+    ${polly} -O3 ${currPollyFlags} ${polybenchFlags} -I${sourceLocation} -I${utilitiesLocation} ${polybenchC} ${benchmarkC} -lm -lgomp -o ${prefix} &
     pid=$!
     wait ${pid}
     if [ $? -ne 0 ]
